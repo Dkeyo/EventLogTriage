@@ -94,7 +94,11 @@ function Get-RecentSysmonEvents {
     $collectScript = {
         param($LogName, $Ids, $Start, $Max)
 
-        $filter = @{ LogName = $LogName; Id = $Ids; StartTime = $Start }
+        # When this block runs remotely, Invoke-Command serialises $Ids across the
+        # session boundary and it comes back as a deserialised object array. Get-WinEvent's
+        # FilterHashtable then silently matches nothing (a single scalar Id still works, an
+        # array does not), so coerce back to a real [int[]] before building the filter.
+        $filter = @{ LogName = $LogName; Id = [int[]]$Ids; StartTime = $Start }
 
         try {
             $records = Get-WinEvent -FilterHashtable $filter -MaxEvents $Max -ErrorAction Stop
