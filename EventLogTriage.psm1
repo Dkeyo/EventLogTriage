@@ -16,6 +16,10 @@ $script:LocalComputerNames    = @('localhost', '127.0.0.1', '::1', '.', $env:COM
 $script:WinRMDefaultPort      = 5985
 $script:TrustedHostsPath      = 'WSMan:\localhost\Client\TrustedHosts'
 
+# Ollama diagnostics (Test-OllamaConnection).
+$script:OllamaDefaultUri      = 'http://localhost:11434'
+$script:OllamaDefaultModel    = 'llama3.1:8b-instruct-q4_K_M'
+
 # ---------------------------------------------------------------------------
 # Dot-source public and private function files.
 # ---------------------------------------------------------------------------

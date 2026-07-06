@@ -10,9 +10,9 @@
     PowerShellVersion = '5.1'
 
     # Only functions that currently exist are exported. This list grows as public
-    # functions are added (Test-OllamaConnection, Format-EventForLLM,
-    # Invoke-EventClassification), so the module imports cleanly at every commit.
-    FunctionsToExport = @('Get-RecentSysmonEvents', 'Test-WinRMConnection')
+    # functions are added (Format-EventForLLM, Invoke-EventClassification),
+    # so the module imports cleanly at every commit.
+    FunctionsToExport = @('Get-RecentSysmonEvents', 'Test-WinRMConnection', 'Test-OllamaConnection')
     CmdletsToExport   = @()
     VariablesToExport = @()
     AliasesToExport   = @()
