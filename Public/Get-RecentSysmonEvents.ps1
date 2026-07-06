@@ -9,7 +9,7 @@ function Get-RecentSysmonEvents {
 
         For the local machine the function calls Get-WinEvent directly. For a remote
         host it runs the same collection inside Invoke-Command over WinRM and REQUIRES
-        an explicit -Credential: the analyst workstation (PCMASTER) is a workgroup host
+        an explicit -Credential: the analyst workstation (SOC-WKS01) is a workgroup host
         while the target (WIN11-EP01) is domain-joined, so there is no usable ambient
         authentication and we refuse to silently fall back to it.
 
@@ -131,7 +131,7 @@ function Get-RecentSysmonEvents {
         }
         else {
             if (-not $Credential) {
-                throw "Remote collection from '$ComputerName' requires -Credential. PCMASTER is a workgroup host, so pass explicit domain credentials, e.g. Get-Credential renoma\Administrator."
+                throw "Remote collection from '$ComputerName' requires -Credential. SOC-WKS01 is a workgroup host, so pass explicit domain credentials, e.g. Get-Credential renoma\Administrator."
             }
 
             Write-Verbose "Collecting remotely from '$ComputerName' via Invoke-Command (WinRM)."

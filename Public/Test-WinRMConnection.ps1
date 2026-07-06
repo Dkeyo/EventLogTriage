@@ -6,7 +6,7 @@ function Test-WinRMConnection {
 
     .DESCRIPTION
         A non-throwing diagnostic for the remote-collection path of Get-RecentSysmonEvents.
-        PCMASTER (the analyst workstation) is a workgroup host and the target (WIN11-EP01)
+        SOC-WKS01 (the analyst workstation) is a workgroup host and the target (WIN11-EP01)
         is domain-joined, so the usual failure causes are: WinRM not enabled, a firewall
         blocking the WinRM port, or the target not matched by this client's TrustedHosts.
         Each is checked in turn and reported as a structured result with a concrete

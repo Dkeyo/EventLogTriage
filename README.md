@@ -20,12 +20,12 @@ That observation drives the core design: every MITRE ID the model emits is valid
 ```mermaid
 flowchart LR
     subgraph Lab["Hyper-V lab (isolated switch, domain renoma.pl)"]
-        DC["Dave.serv\nWindows Server 2019 DC\n172.16.0.10"]
+        DC["DC01\nWindows Server 2019 DC\n172.16.0.10"]
         EP["WIN11-EP01\nWindows 11 endpoint\nSysmon (SwiftOnSecurity config)\n172.16.0.20"]
         DC --- EP
     end
 
-    subgraph Workstation["PCMASTER (analyst workstation, workgroup)"]
+    subgraph Workstation["SOC-WKS01 (analyst workstation, workgroup)"]
         MOD["EventLogTriage\nPowerShell module"]
         LLM["Ollama (local LLM)\nLlama 3.1 / Bielik / Qwen"]
         VAL["MITRE validation layer\n37-technique allowlist"]
@@ -93,8 +93,8 @@ All external boundaries (`Get-WinEvent`, `Invoke-Command`, `Test-WSMan`, `Test-N
 
 | Host | Role |
 |---|---|
-| PCMASTER | Analyst workstation (workgroup); i5-12400F, RTX 3060 12GB, 32GB RAM |
-| Dave.serv | Windows Server 2019, domain controller for `renoma.pl` |
+| SOC-WKS01 | Analyst workstation (workgroup); i5-12400F, RTX 3060 12GB, 32GB RAM |
+| DC01 | Windows Server 2019, domain controller for `renoma.pl` |
 | WIN11-EP01 | Windows 11 endpoint, domain-joined, Sysmon with SwiftOnSecurity config |
 
 The workgroup-to-domain split is deliberate: it forces the explicit-credential and TrustedHosts handling a real cross-boundary SOC deployment would need.
