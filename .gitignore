@@ -1,0 +1,21 @@
+# PowerShell
+*.psd1.tmp
+*.bak
+
+# Pester test results
+TestResults*.xml
+coverage.xml
+
+# IDE
+.vscode/
+.vs/
+*.suo
+*.user
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Backup
+*~
+*.swp
