@@ -73,6 +73,16 @@ Test-WinRMConnection -ComputerName WIN11-EP01 -Credential $cred
 
 Default collection covers Sysmon event IDs `1, 3, 7, 10, 11, 22` (ProcessCreate, NetworkConnect, ImageLoad, ProcessAccess, FileCreate, DnsQuery). These are the events with the highest detection value per SwiftOnSecurity's config philosophy.
 
+## Running against the lab
+
+`Test-WinRMConnection` verifies an authenticated WinRM path to the domain endpoint. It reports `Healthy` only when a real credentialed handshake succeeds (see design decision 4).
+
+![Test-WinRMConnection reporting Healthy against WIN11-EP01](docs/winrm-diagnostic-healthy.png)
+
+`Get-RecentSysmonEvents` then pulls normalised Sysmon telemetry from that endpoint over WinRM. The collected objects carry source-event metadata (Computer, TimeCreated, EventId, RecordId) so an analyst can pivot back to the exact record after classification.
+
+![Get-RecentSysmonEvents returning 100 events collected from WIN11-EP01 over WinRM](docs/sysmon-collection.png)
+
 ## Key design decisions
 
 1. **Allowlist validation for MITRE IDs.** Existence check catches fabricated IDs; the canonical technique name stored alongside each ID enables sanity-checking the model's reasoning against what the technique actually means. Never trust the model's MITRE field.
@@ -88,6 +98,8 @@ Invoke-Pester -Path .\Tests
 ```
 
 All external boundaries (`Get-WinEvent`, `Invoke-Command`, `Test-WSMan`, `Test-NetConnection`) are mocked, so the suite runs on any machine without the lab.
+
+![Pester suite: 17 tests passed, 0 failed](docs/pester-tests.png)
 
 ## Lab
 
