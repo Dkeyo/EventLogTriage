@@ -9,10 +9,9 @@
 
     PowerShellVersion = '5.1'
 
-    # Only functions that currently exist are exported. This list grows as public
-    # functions are added (Format-EventForLLM, Invoke-EventClassification),
-    # so the module imports cleanly at every commit.
-    FunctionsToExport = @('Get-RecentSysmonEvents', 'Test-WinRMConnection', 'Test-OllamaConnection')
+    # Only functions that currently exist are exported. Get-MitreAllowlist is a private
+    # helper (Private/), dot-sourced but deliberately not exported.
+    FunctionsToExport = @('Get-RecentSysmonEvents', 'Test-WinRMConnection', 'Test-OllamaConnection', 'Format-EventForLLM', 'Invoke-EventClassification')
     CmdletsToExport   = @()
     VariablesToExport = @()
     AliasesToExport   = @()

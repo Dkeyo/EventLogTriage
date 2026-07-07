@@ -20,6 +20,13 @@ $script:TrustedHostsPath      = 'WSMan:\localhost\Client\TrustedHosts'
 $script:OllamaDefaultUri      = 'http://localhost:11434'
 $script:OllamaDefaultModel    = 'llama3.1:8b-instruct-q4_K_M'
 
+# MITRE ATT&CK allowlist (Format-EventForLLM constrained-choice prompt, and later
+# Invoke-EventClassification validation). Path to the curated technique list; the
+# parsed content is cached per path in $script:MitreAllowlistCache on first use so a
+# batch of events does not re-read the file.
+$script:MitreAllowlistPath    = Join-Path $PSScriptRoot 'Data\valid-mitre-techniques.json'
+$script:MitreAllowlistCache   = @{}
+
 # ---------------------------------------------------------------------------
 # Dot-source public and private function files.
 # ---------------------------------------------------------------------------
