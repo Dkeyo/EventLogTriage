@@ -106,6 +106,12 @@ MitreNote             : MITRE allowlist is preliminary; a returned ID is confirm
 Model                 : llama3.1:8b-instruct-q4_K_M
 ```
 
+Captured live: an encoded PowerShell process was run on the endpoint, collected over WinRM, and classified as `SUSPICIOUS` with `T1059.001`. The event provenance (`RecordId`) points back to the exact Sysmon record.
+
+![Invoke-EventClassification classifying a live encoded-PowerShell event from WIN11-EP01 as SUSPICIOUS, T1059.001](docs/real-detection.png)
+
+[docs/pipeline-walkthrough.md](docs/pipeline-walkthrough.md) traces one event through all five stages (collection, prompt, raw model reply, validation, MITRE mapping) and shows the guard rejecting a fabricated ID. You can reproduce both with the demo scripts `docs/Show-Pipeline.ps1` and `docs/Show-Guard.ps1`.
+
 ## Key design decisions
 
 1. **Allowlist validation for MITRE IDs.** Existence check catches fabricated IDs; the canonical technique name stored alongside each ID enables sanity-checking the model's reasoning against what the technique actually means. Never trust the model's MITRE field.
