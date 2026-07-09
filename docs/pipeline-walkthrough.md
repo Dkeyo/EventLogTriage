@@ -76,7 +76,7 @@ T1059.001 = Command and Scripting Interpreter: PowerShell
 
 ## The validation layer earning its keep
 
-The point of the whole design is that the model cannot be trusted on the MITRE field. When a reply mixes a real ID with fabricated ones, the tool passes only the ones that exist in the allowlist. Real captured output:
+The point of the whole design is that the model cannot be trusted on the MITRE field. When a reply mixes a real ID with fabricated ones, the tool passes only the ones that exist in the allowlist. In the output below the model reply is mocked to force the mix; the validation is the real code (`Show-Guard.ps1`):
 
 ```
 Model returned        : T1059.001, T1337, T9999

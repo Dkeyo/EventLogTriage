@@ -1,5 +1,9 @@
 # EventLogTriage
 
+[![CI](https://github.com/Dkeyo/EventLogTriage/actions/workflows/ci.yml/badge.svg)](https://github.com/Dkeyo/EventLogTriage/actions/workflows/ci.yml)
+[![PowerShell 5.1](https://img.shields.io/badge/PowerShell-5.1-blue)](https://learn.microsoft.com/powershell/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 PowerShell toolkit for AI-assisted triage of Windows Sysmon events: collect endpoint telemetry, classify it with a local LLM, and validate every MITRE ATT&CK claim against an allowlist, because local models hallucinate technique IDs.
 
 Built and tested on a self-hosted Active Directory lab (Hyper-V, Windows Server 2019 DC + Windows 11 endpoint).
@@ -13,28 +17,28 @@ SOC L1 analysts burn most of their time on repetitive event triage. Local LLMs (
 | Llama 3.1 8B | **Fabricates** MITRE technique IDs | Returned non-existent `T1160` |
 | Bielik 11B v2.3 | **Misapplies** real IDs | Returned valid IDs (`T1059`, `T1105`) assigned to the wrong behaviour |
 
-That observation drives the core design: every MITRE ID the model emits is validated against a curated allowlist ([Data/valid-mitre-techniques.json](Data/valid-mitre-techniques.json), 37 techniques, ATT&CK v16), and the model is constrained to choose from that list rather than generate freely.
+That observation drives the core design: every MITRE ID the model emits is validated against a curated allowlist ([Data/valid-mitre-techniques.json](Data/valid-mitre-techniques.json), 37 techniques, ATT&CK v16, verification preliminary). The model is constrained to choose from that list rather than generate freely. The allowlist catches fabricated IDs; a real ID applied to the wrong behaviour is caught by the analyst reading the model's `Reasoning`, which is why the human stays in the loop.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     subgraph Lab["Hyper-V lab (isolated switch, domain renoma.pl)"]
-        DC["DC01\nWindows Server 2019 DC\n172.16.0.10"]
-        EP["WIN11-EP01\nWindows 11 endpoint\nSysmon (SwiftOnSecurity config)\n172.16.0.20"]
+        DC["DC01<br/>Windows Server 2019 DC<br/>172.16.0.10"]
+        EP["WIN11-EP01<br/>Windows 11 endpoint<br/>Sysmon (SwiftOnSecurity config)<br/>172.16.0.20"]
         DC --- EP
     end
 
     subgraph Workstation["SOC-WKS01 (analyst workstation, workgroup)"]
-        MOD["EventLogTriage\nPowerShell module"]
-        LLM["Ollama (local LLM)\nLlama 3.1 / Bielik / Qwen"]
-        VAL["MITRE validation layer\n37-technique allowlist"]
+        MOD["EventLogTriage<br/>PowerShell module"]
+        LLM["Ollama (local LLM)<br/>Llama 3.1 / Bielik / Qwen"]
+        VAL["MITRE validation layer<br/>37-technique allowlist"]
     end
 
-    EP -- "WinRM\n(explicit credentials)" --> MOD
+    EP -- "WinRM<br/>(explicit credentials)" --> MOD
     MOD -- "formatted event" --> LLM
     LLM -- "classification" --> VAL
-    VAL -- "validated verdict" --> ANALYST["Human analyst\n(final decision)"]
+    VAL -- "validated verdict" --> ANALYST["Human analyst<br/>(final decision)"]
 ```
 
 Pipeline: Sysmon → PowerShell collection → local LLM classification → MITRE validation → human-in-the-loop.
@@ -51,9 +55,18 @@ The collection layer and the LLM classification layer are both complete. Events 
 | MITRE ATT&CK allowlist (37 techniques, machine-readable verification status) | ✅ Done |
 | `Format-EventForLLM`: constrained-choice prompt builder (allowlist embedded, strict-JSON contract) | ✅ Done |
 | `Invoke-EventClassification`: Ollama call plus validation of every MITRE ID against the allowlist | ✅ Done |
-| Pester v5 test suites (91 tests, all external boundaries mocked) | ✅ Done |
+| Pester v5 test suites (96 tests, all external boundaries mocked) | ✅ Done |
 
 Known low-priority items are tracked in [FUTURE_WORK.md](FUTURE_WORK.md).
+
+## Requirements
+
+- Windows PowerShell 5.1 (the module targets 5.1; no PowerShell 7-only syntax is used).
+- Pester v5 to run the test suite (`Install-Module Pester -MinimumVersion 5.0`).
+- For classification: [Ollama](https://ollama.com) running locally on `http://localhost:11434` with a model pulled (default `llama3.1:8b-instruct-q4_K_M`; Bielik and Qwen also supported).
+- For remote collection: [Sysmon](https://learn.microsoft.com/sysinternals/downloads/sysmon) (SwiftOnSecurity config) on the target endpoint, and WinRM reachable from the analyst workstation.
+
+Collection and the diagnostics run without Ollama; only `Invoke-EventClassification` needs the model.
 
 ## Usage
 
@@ -93,17 +106,15 @@ Default collection covers Sysmon event IDs `1, 3, 7, 10, 11, 22` (ProcessCreate,
 `Invoke-EventClassification` sends each event to the local model, parses the reply, and validates every returned MITRE ID against the allowlist. An ID that is not in the allowlist is moved to `RejectedTechniques` and `HallucinationDetected` is set, so a fabricated technique never reaches the analyst as fact. The result carries the event provenance (Computer, EventId, RecordId) for pivoting back to the source record.
 
 ```
-Computer              : WIN11-EP01
+Computer              : WIN11-EP01.renoma.pl
 EventId               : 1
-RecordId              : 9773
+RecordId              : 10970
 Status                : Classified
 Classification        : SUSPICIOUS
 MitreTechniques       : {T1059.001}
 RejectedTechniques    : {}
 HallucinationDetected : False
-Reasoning             : PowerShell process created with a hidden, encoded command line.
-MitreNote             : MITRE allowlist is preliminary; a returned ID is confirmed to exist, sanity-check the mapping.
-Model                 : llama3.1:8b-instruct-q4_K_M
+Reasoning             : The event indicates the creation of a new PowerShell process with an encoded command line, which could be indicative of suspicious or malicious activity.
 ```
 
 Captured live: an encoded PowerShell process was run on the endpoint, collected over WinRM, and classified as `SUSPICIOUS` with `T1059.001`. The event provenance (`RecordId`) points back to the exact Sysmon record.
@@ -126,9 +137,7 @@ Captured live: an encoded PowerShell process was run on the endpoint, collected 
 Invoke-Pester -Path .\Tests
 ```
 
-All external boundaries (`Get-WinEvent`, `Invoke-Command`, `Test-WSMan`, `Test-NetConnection`, `Invoke-RestMethod`) are mocked, so the suite runs on any machine without the lab. It covers 91 tests across the module, including the MITRE validation path (a fabricated ID is rejected and flagged).
-
-![Pester suite passing across the module](docs/pester-tests.png)
+All external boundaries (`Get-WinEvent`, `Invoke-Command`, `Test-WSMan`, `Test-NetConnection`, `Invoke-RestMethod`) are mocked, so the suite runs on any machine without the lab. It covers 96 tests across the module, including the MITRE validation path (a fabricated ID is rejected and flagged) and a module smoke test that asserts the manifest imports and exports exactly the five public functions. The CI badge at the top runs this suite on every push.
 
 ## Lab
 

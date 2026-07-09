@@ -30,7 +30,7 @@ $event = [PSCustomObject]@{
     Data=@{ Image='C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'; CommandLine='powershell.exe -nop -w hidden -enc SQBFAFgAKABOAGUAdwA'; ParentImage='C:\Windows\System32\cmd.exe'; User='RENOMA\Administrator' }
 }
 
-Hdr "[1] SAMPLE EVENT   (shape produced by Get-RecentSysmonEvents; see docs/img/real-detection.png for a live capture)"
+Hdr "[1] SAMPLE EVENT   (shape produced by Get-RecentSysmonEvents; see docs/real-detection.png for a live capture)"
 Write-Host ("    Computer     : {0}" -f $event.Computer)
 Write-Host ("    EventId      : {0} (Process Create)    RecordId : {1}" -f $event.EventId, $event.RecordId)
 Write-Host ("    CommandLine  : {0}" -f $event.Data.CommandLine) -ForegroundColor Yellow

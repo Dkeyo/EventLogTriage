@@ -26,10 +26,28 @@ not bugs. Each entry notes the date it was raised.
   additionally detect "a *different* name form of this host is already trusted" and
   surface that as an informational note, to save the analyst a redundant entry.
   Informational only; not a correctness issue.
+- **Authorization vs authentication residual (2026-07-09).** A `Healthy` result proves
+  WS-Man transport plus a Negotiate-authenticated handshake, not that the account is
+  authorized for the PowerShell remoting session configuration (Remote Management Users
+  membership or the endpoint SDDL). An account that authenticates but lacks remoting
+  rights would report `Healthy` yet fail `Invoke-Command` with Access Denied. The
+  `Healthy` definition in the help is accurate about what it tests; a future enhancement
+  could add a lightweight authorization probe and note the boundary in the recommendation.
+
+## Invoke-EventClassification
+- **Semantic misapplication check via `sysmonEvents` (2026-07-09).** The allowlist
+  validation catches *fabricated* IDs (existence check), but a *real* ID applied to the
+  wrong behaviour (the Bielik failure mode) passes clean; today that is caught only by the
+  analyst reading `Reasoning`. Each allowlist entry already carries a `sysmonEvents` array,
+  which the validator ignores. Cross-referencing the source event's `EventId` against the
+  returned technique's declared `sysmonEvents` would be a cheap, deterministic partial check
+  (e.g. LSASS credential dumping `T1003.001` mapped onto a DNS-query event is a mismatch).
+  Would strengthen the guard beyond fabrication without needing the model.
 
 ## MITRE allowlist
-- **Live verification pass (Week 6).** `Data/valid-mitre-techniques.json` carries
-  `verificationStatus: "preliminary-2026-06-17"`. Names/tactics were verified from
-  expert knowledge; a character-by-character cross-check against attack.mitre.org
-  was deferred (tooling outage). Re-confirm all 37 entries before treating the
-  allowlist as production-validated, then update `verificationStatus`.
+- **Ongoing verification caution.** `Data/valid-mitre-techniques.json` carries
+  `verificationStatus: "preliminary-*"`. IDs, names, and tactics were verified from expert
+  ATT&CK knowledge; a character-by-character cross-check against attack.mitre.org is not yet
+  done. The runtime surfaces this as `MitreNote` on every result by design. Completing the
+  37-entry cross-check and flipping `verificationStatus` to a verified value would remove the
+  caution and substantiate the allowlist as production-validated.

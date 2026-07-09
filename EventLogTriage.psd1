@@ -23,7 +23,7 @@
             Tags         = @('Security', 'SOC', 'MITRE', 'ATTACK', 'Sysmon', 'Ollama', 'LLM', 'Triage', 'DFIR')
             ProjectUri   = 'https://github.com/Dkeyo/EventLogTriage'
             LicenseUri   = 'https://github.com/Dkeyo/EventLogTriage/blob/main/LICENSE'
-            ReleaseNotes = 'Phase 1: Sysmon event collection (local and WinRM remote) and tri-state WinRM diagnostics, with Pester v5 coverage and the MITRE ATT&CK allowlist that later classification will validate against.'
+            ReleaseNotes = 'Sysmon event collection (local and WinRM remote), tri-state WinRM and Ollama diagnostics, and the LLM triage layer: constrained-choice prompt building plus classification with every MITRE ATT&CK ID validated against a curated allowlist to catch hallucinated techniques. Pester v5 coverage across all functions.'
         }
     }
 }

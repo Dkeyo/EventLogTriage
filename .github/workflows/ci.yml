@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Pester (Windows PowerShell 5.1)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # windows-latest ships Pester 3.x, which cannot parse the v5 test syntax.
+      # Install Pester 5 (SkipPublisherCheck is required to overwrite the built-in module).
+      - name: Install Pester 5
+        shell: powershell
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck
+          Get-Module Pester -ListAvailable | Select-Object Name, Version
+
+      # Run under Windows PowerShell 5.1 (the module's target), which is the `powershell`
+      # shell on windows-latest. All external boundaries are mocked, so no lab or Ollama
+      # is needed.
+      - name: Run Pester suite
+        shell: powershell
+        run: |
+          Import-Module Pester -MinimumVersion 5.0.0
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './Tests'
+          $cfg.Run.Throw = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg

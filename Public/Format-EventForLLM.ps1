@@ -54,10 +54,10 @@ function Format-EventForLLM {
         Builds the prompt pair for the first collected event.
 
     .EXAMPLE
-        Get-RecentSysmonEvents | Format-EventForLLM | ForEach-Object { Invoke-EventClassification -Prompt $_ }
+        Get-RecentSysmonEvents | Format-EventForLLM
 
-        Streams a batch of events through the prompt builder. The allowlist is parsed
-        once and reused for every event in the batch.
+        Builds the prompt pair for every collected event. The allowlist is parsed once
+        and reused for the whole batch.
 
     .OUTPUTS
         System.Collections.Hashtable

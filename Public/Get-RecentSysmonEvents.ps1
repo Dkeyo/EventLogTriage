@@ -106,7 +106,12 @@ function Get-RecentSysmonEvents {
         catch {
             # Get-WinEvent THROWS (it does not just warn) when nothing matches the filter.
             # An empty result is a valid outcome, not a failure, so swallow only this case.
-            if ($_.Exception.Message -like '*No events were found*') { return }
+            # Match on the locale-independent FullyQualifiedErrorId first: the exception
+            # Message is localised, so on a non-English endpoint (for example a Polish-locale
+            # Windows 11) a zero-match window would otherwise rethrow. The English message is
+            # kept as a fallback for hosts that do not surface the FQID.
+            if ($_.FullyQualifiedErrorId -eq 'NoMatchingEventsFound,Microsoft.PowerShell.Commands.GetWinEventCommand' -or
+                $_.Exception.Message -like '*No events were found*') { return }
             throw
         }
 
